@@ -682,7 +682,7 @@ class tempLGCN_attn(MessagePassing):
         if self.u_abs_drift:
             _u_abs_drift_emb = self._u_abs_drift_emb.weight[src]
             #abs_decay = torch.exp(u_abs_decay.unsqueeze(1) * self._u_abs_beta_emb.weight[src])
-            abs_decay = torch.sigmoid(u_abs_decay.unsqueeze(1) * self._u_abs_beta_emb.weight)
+            abs_decay = torch.sigmoid(u_abs_decay.unsqueeze(1) * self._u_abs_beta_emb.weight) # much less memory
             #abs_decay = torch.tanh(u_abs_decay.unsqueeze(1) * self._u_abs_beta_emb.weight[src])
             _u_abs_drift_emb = _u_abs_drift_emb * abs_decay
             _inner_pro = _inner_pro + _u_abs_drift_emb
