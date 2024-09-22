@@ -609,9 +609,9 @@ class tempLGCN_attn(MessagePassing):
             self.period = nn.Parameter(torch.tensor([config['win']]))  # Starting with 24 (for daily cycles, for example)
             self.phase_shift = nn.Parameter(torch.tensor([0.0]))  # Optional, can also be trainable if needed
             
-            #self._u_abs_beta_emb = nn.Embedding(num_embeddings=1, embedding_dim=self.embedding_dim).to(self.device)  
-            #nn.init.zeros_(self._u_abs_beta_emb.weight)
-            #self._u_abs_beta_emb.weight.requires_grad = True
+            self._u_abs_beta_emb = nn.Embedding(num_embeddings=1, embedding_dim=self.embedding_dim).to(self.device)  
+            nn.init.zeros_(self._u_abs_beta_emb.weight)
+            self._u_abs_beta_emb.weight.requires_grad = True
             
             if self.verbose:
                 print("The absolute user drift temporal embedding is ON.")
@@ -687,8 +687,13 @@ class tempLGCN_attn(MessagePassing):
         if self.u_abs_drift:
             _u_abs_drift_emb = self._u_abs_drift_emb.weight[src]
             # Use the learnable period and phase shift in the cosine function
-            abs_decay = torch.cos((2 * torch.pi * u_abs_decay.unsqueeze(1) / self.period) + self.phase_shift)
-
+            if config['a_method'] == 'sigmoid':
+                abs_decay = torch.sigmoid(u_abs_decay.unsqueeze(1) * self._u_abs_beta_emb.weight)
+            elif config['a_method'] == 'tanh':
+                abs_decay = torch.tanh(u_abs_decay.unsqueeze(1) * self._u_abs_beta_emb.weight)
+            elif config['a_method'] == 'cos':
+                abs_decay = torch.cos((2 * torch.pi * u_abs_decay.unsqueeze(1) / self.period) + self.phase_shift)
+            
             _u_abs_drift_emb = _u_abs_drift_emb * abs_decay
             _inner_pro = _inner_pro + _u_abs_drift_emb
             
