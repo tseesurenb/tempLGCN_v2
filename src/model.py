@@ -608,7 +608,7 @@ class tempLGCN_attn(MessagePassing):
             # Initialize the period as a trainable parameter (starting with some default value)
             self.period = nn.Parameter(torch.tensor([1.0]))  # Starting with 24 (for daily cycles, for example)
             
-            self._u_abs_beta_emb = nn.Embedding(num_embeddings=1, embedding_dim=self.embedding_dim).to(self.device)  
+            self._u_abs_beta_emb = nn.Embedding(num_embeddings=config['num_terms'], embedding_dim=self.embedding_dim).to(self.device)  
             nn.init.zeros_(self._u_abs_beta_emb.weight)
             self._u_abs_beta_emb.weight.requires_grad = True
             
@@ -697,7 +697,7 @@ class tempLGCN_attn(MessagePassing):
                 #abs_decay = torch.cos((2 * torch.pi * u_abs_decay.unsqueeze(1) / self.period))
                 
                 num_terms = config['num_terms'] 
-                abs_decay = sum(torch.cos((2 * torch.pi * (n + 1) * u_abs_decay.unsqueeze(1) / self.period)) * self._u_abs_beta_emb.weight for n in range(num_terms))
+                abs_decay = sum(torch.cos((2 * torch.pi * (n + 1) * u_abs_decay.unsqueeze(1) * self._u_abs_beta_emb.weight[n] / self.period)) for n in range(num_terms))
                 
                 # Full Fourier-like series with both cosine (real) and sine (imaginary) components
                 #abs_decay = sum(
