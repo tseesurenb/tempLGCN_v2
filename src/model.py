@@ -604,6 +604,10 @@ class tempLGCN_attn(MessagePassing):
             nn.init.zeros_(self._u_abs_drift_emb.weight)
             self._u_abs_drift_emb.weight.requires_grad = True
             
+            # Initialize the period as a trainable parameter (starting with some default value)
+            self.period = nn.Parameter(torch.tensor([24.0]))  # Starting with 24 (for daily cycles, for example)
+            self.phase_shift = nn.Parameter(torch.tensor([0.0]))  # Optional, can also be trainable if needed
+            
             self._u_abs_beta_emb = nn.Embedding(num_embeddings=1, embedding_dim=self.embedding_dim).to(self.device)  
             nn.init.zeros_(self._u_abs_beta_emb.weight)
             self._u_abs_beta_emb.weight.requires_grad = True
@@ -681,17 +685,20 @@ class tempLGCN_attn(MessagePassing):
             
         if self.u_abs_drift:
             _u_abs_drift_emb = self._u_abs_drift_emb.weight[src]
-            #abs_decay = torch.tanh_(u_abs_decay.unsqueeze(1) * self._u_abs_beta_emb.weight)
+            
             #abs_decay = torch.sigmoid(u_abs_decay.unsqueeze(1) * self._u_abs_beta_emb.weight) # much less memory
-            abs_decay = torch.sigmoid(self._u_abs_beta_emb.weight) # much less memory
+            
+            # Use the learnable period and phase shift in the cosine function
+            abs_decay = torch.cos((2 * torch.pi * u_abs_decay.unsqueeze(1) / self.period) + self.phase_shift)
+
             _u_abs_drift_emb = _u_abs_drift_emb * abs_decay
             _inner_pro = _inner_pro + _u_abs_drift_emb
             
         if self.u_rel_drift:
             _u_rel_drift_emb = self._u_rel_drift_emb.weight[src]
-            #rel_decay = torch.sigmoid(u_rel_decay.unsqueeze(1) * self._u_rel_beta_emb.weight)
+            rel_decay = torch.sigmoid(u_rel_decay.unsqueeze(1) * self._u_rel_beta_emb.weight)
             #rel_decay = torch.tanh_(u_rel_decay.unsqueeze(1) * self._u_rel_beta_emb.weight)
-            rel_decay = torch.tanh(self._u_rel_beta_emb.weight)
+            #rel_decay = torch.tanh(self._u_rel_beta_emb.weight)
             _u_rel_drift_emb = _u_rel_drift_emb * rel_decay
             _inner_pro = _inner_pro + _u_rel_drift_emb
              
