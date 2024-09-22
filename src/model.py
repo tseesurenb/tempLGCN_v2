@@ -606,10 +606,7 @@ class tempLGCN_attn(MessagePassing):
             self._u_abs_drift_emb.weight.requires_grad = True
             
             # Initialize the period as a trainable parameter (starting with some default value)
-            self.period = nn.Parameter(torch.tensor([config['win']]))  # Starting with 24 (for daily cycles, for example)
-            #self.period = nn.Embedding(num_embeddings=1, embedding_dim=self.embedding_dim).to(self.device)
-            #nn.init.ones_(self.period.weight)
-            #self.period.weight.requires_grad = True
+            self.period = nn.Parameter(torch.tensor([1.0]))  # Starting with 24 (for daily cycles, for example)
             
             self._u_abs_beta_emb = nn.Embedding(num_embeddings=1, embedding_dim=self.embedding_dim).to(self.device)  
             nn.init.zeros_(self._u_abs_beta_emb.weight)
@@ -700,8 +697,21 @@ class tempLGCN_attn(MessagePassing):
                 #abs_decay = torch.cos((2 * torch.pi * u_abs_decay.unsqueeze(1) / self.period))
                 
                 num_terms = config['num_terms'] 
-                abs_decay = sum(torch.cos((2 * torch.pi * (n + 1) * u_abs_decay.unsqueeze(1) / self.period)) for n in range(num_terms))
+                abs_decay = sum(torch.cos((2 * torch.pi * (n + 1) * u_abs_decay.unsqueeze(1) / self.period)) * self._u_abs_beta_emb.weight for n in range(num_terms))
                 
+                # Full Fourier-like series with both cosine (real) and sine (imaginary) components
+                #abs_decay = sum(
+                #    torch.cos(2 * torch.pi * (n + 1) * u_abs_decay.unsqueeze(1) / self.period) +   # Cosine part
+                #    1j * torch.sin(2 * torch.pi * (n + 1) * u_abs_decay.unsqueeze(1) / self.period)  # Sine part
+                #    for n in range(num_terms)
+                #)
+                
+                #abs_decay = sum(
+                #    torch.cos(2 * torch.pi * (n + 1) * u_abs_decay.unsqueeze(1) / self.period) +
+                #    torch.sin(2 * torch.pi * (n + 1) * u_abs_decay.unsqueeze(1) / self.period)
+                #    for n in range(num_terms)
+                #)
+
                 _u_abs_drift_emb = _u_abs_drift_emb * abs_decay
                 
             _inner_pro = _inner_pro + _u_abs_drift_emb
@@ -727,8 +737,3 @@ class tempLGCN_attn(MessagePassing):
         
         out =  x_j * norm.view(-1, 1)        
         return out
-    
-
-#def fourier_decay(u_abs_decay, self.period, num_terms):
-#    decay = sum(torch.cos((2 * torch.pi * (n + 1) * u_abs_decay.unsqueeze(1) / self.period)) for n in range(num_terms))
-#    return decay

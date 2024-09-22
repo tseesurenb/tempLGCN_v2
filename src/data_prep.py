@@ -330,22 +330,17 @@ def load_data(dataset = "ml-100k", min_interaction_threshold = 20, verbose = 0):
     return ratings_df, user_df, item_df, rating_stat
 
 # add time distance scaled with beta
-def add_abs_decay(rating_df, beta = 0.05, method = 'log', verbose = 0):
+def add_u_abs_decay(rating_df, verbose = 0):
     
-    _beta = beta
-    _base = 0.0000000001
     _win_unit = 24*3600
     
     rating_df["timestamp"] = rating_df["timestamp"].astype("int64")
     _start = rating_df['timestamp'].min()
     _end = rating_df['timestamp'].max()
     
-    _max_distance = _end - _start 
-    
     rating_df['abs_decay'] = (rating_df['timestamp'] - _start) / _win_unit
     
     return rating_df
-
 
 def sigmoid(x):
     z = 1/(1 + np.exp(-x)) 
@@ -353,9 +348,9 @@ def sigmoid(x):
     return z
 
 # convert timestamp to day, week, month level
-def add_u_rel_decay(rating_df, beta = 25, win_size = 1, method = 'exp', verbose = 0):
+def add_u_rel_decay(rating_df, verbose = 0):
     
-    _win_unit = 24 * 3600 * win_size
+    _win_unit = 24 * 3600
     
     # Step 1: Convert timestamp to int64
     rating_df["timestamp"] = rating_df["timestamp"].astype("int64")
@@ -384,73 +379,8 @@ def add_u_rel_decay(rating_df, beta = 25, win_size = 1, method = 'exp', verbose 
         # Show the plot
         plt.show()
     
-        print(f'The relative decay method is {method} with param: {beta}')
-    
     return rating_df
 
-def add_i_rel_decay(rating_df, beta = 25, win_size = 1, method = 'exp', verbose = 0):
-    
-    _beta = beta
-    _base = 0.0000000001
-    _win_unit = 24 * 3600 * win_size
-        
-    # Step 1: Convert timestamp to int64
-    rating_df["timestamp"] = rating_df["timestamp"].astype("int64")
-
-    # Step 2: Calculate the minimum timestamp for each userId
-    min_timestamp_per_item = rating_df.groupby('itemId')['timestamp'].min().reset_index()
-    min_timestamp_per_item.columns = ['itemId', 'min_timestamp']
-
-    # Step 3: Merge the minimum timestamps back into the original DataFrame
-    rating_df = pd.merge(rating_df, min_timestamp_per_item, on='itemId')
-    
-    # Step 4: Calculate the max timestamp for each userId
-    max_timestamp_per_item = rating_df.groupby('itemId')['timestamp'].max().reset_index()
-    max_timestamp_per_item.columns = ['itemId', 'max_timestamp']
-    
-    # Step 5: Merge the maximum timestamps back into the original DataFrame
-    rating_df = pd.merge(rating_df, max_timestamp_per_item, on='itemId')
-    
-    # Step 6: Calculate the time distance for each userId
-    rating_df['time_distance'] = (rating_df['max_timestamp'] - rating_df['min_timestamp']) / 86400
-
-    # Step 4: Calculate the 'u_rel_decay' column
-    if method == 'lin':
-        # use time distance to normalize the time difference
-        if rating_df['time_distance'].max() != 0:
-            rating_df['i_rel_decay'] = ((rating_df['timestamp'] - rating_df['min_timestamp']) / (rating_df['time_distance']))
-        else: # it should be zero
-            rating_df['i_rel_decay'] = 0
-            
-        #rating_df['u_rel_decay'] = ((rating_df['timestamp'] - rating_df['min_timestamp']) / (rating_df['timestamp'].max() - rating_df['timestamp'].min()))
-    elif method == 'log':
-        rating_df['i_rel_decay'] = _base + np.power(((rating_df['timestamp'] - rating_df['min_timestamp']) / _win_unit), _beta)
-    elif method == 'exp':
-        rating_df['i_rel_decay'] = _base + np.exp(-_beta * (rating_df['timestamp'] - rating_df['min_timestamp']) / _win_unit)
-    if method == 'sigmoid':
-        rating_df['i_rel_decay'] = sigmoid(_base + (rating_df['timestamp'] - rating_df['min_timestamp']) / _win_unit)
-    
-    # Step 5: Drop the columns if you no longer need them
-    rating_df = rating_df.drop('min_timestamp', axis=1)
-    rating_df = rating_df.drop('max_timestamp', axis=1)
-    rating_df = rating_df.drop('time_distance', axis=1)
-    
-    if verbose == 1:
-        # Get the sorted values of 'u_rel_decay'
-        sorted_values = sorted(rating_df['u_rel_decay'])
-        # Plot the sorted values
-        plt.plot(sorted_values)
-        # Add labels and title
-        plt.xlabel('Index (after sorting)')
-        plt.ylabel('u_rel_decay')
-        plt.title('Sorted Plot of u_rel_decay')
-        # Show the plot
-        plt.show()
-
-        print(f'The relative decay method is {method} with param: {beta}')
-    
-    return rating_df
-    
 # get user stats for each user including number of ratings, mean rating and time distance
 def get_user_stats(rating_df, verbose = False):
     

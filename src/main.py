@@ -18,10 +18,6 @@ np.random.seed(SEED)
 torch.manual_seed(SEED)
 
 # Set global variables
-R_BETA = config['r_beta']
-R_METHOD = config['r_method']
-A_BETA = config['a_beta']
-A_METHOD = config['a_method']
 DATASET = config['dataset']
 VERBOSE = config['verbose']
 MODEL = config['model']
@@ -40,9 +36,8 @@ df, _, _, stats = dp.load_data(dataset=DATASET, min_interaction_threshold=MIN_US
 NUM_USERS, NUM_ITEMS, MEAN_RATING, NUM_RATINGS, TIME_DISTANCE = stats['num_users'], stats['num_items'], stats['mean_rating'], stats['num_ratings'], stats['time_distance']
 
 # STEP 2: adding absolute and relative decays for users and items
-df = dp.add_abs_decay(df, method=A_METHOD, beta=A_BETA, verbose=VERBOSE)
-df = dp.add_u_rel_decay(df, method=R_METHOD, beta=R_BETA, verbose=VERBOSE)
-#df = dp.add_i_rel_decay(df, method=R_METHOD, beta=R_BETA, verbose=VERBOSE)
+df = dp.add_u_abs_decay(df, verbose=VERBOSE)
+df = dp.add_u_rel_decay(df, verbose=VERBOSE)
 
 stats2 = {'num_users': NUM_USERS, 'num_items': NUM_ITEMS,  'num_interactions': NUM_RATINGS}
 
@@ -70,4 +65,4 @@ for seed in seeds:
 
     exp_n += 1
 
-print_metrics(rmses, recalls, precs, ncdg, stats=stats2)
+print_metrics(rmses, recalls, precs, ncdgs_20, stats=stats2)

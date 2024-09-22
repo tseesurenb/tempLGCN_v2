@@ -38,7 +38,7 @@ def print_metrics(rmses, recalls, precs, ncdg, stats):
     # Print dataset and stats information
     print(f" Dataset: {config['dataset']}, num_users: {stats['num_users']}, num_items: {stats['num_items']}, num_interactions: {stats['num_interactions']}")
     
-    print(f"   MODEL: {br}{config['model']}{rs} | #LAYERS: {br}{config['num_layers']}{rs} | BATCH_SIZE: {br}{config['batch_size']}{rs} | DECAY: {br}{config['decay']}{rs} | EPOCHS: {br}{config['epochs']}{rs} ")
+    print(f"   MODEL: {br}{config['model']}{rs} | #LAYERS: {br}{config['num_layers']}{rs} | #Absolute func: {br}{config['a_method']}{rs} | BATCH_SIZE: {br}{config['batch_size']}{rs} | DECAY: {br}{config['decay']}{rs} | EPOCHS: {br}{config['epochs']}{rs} ")
 
     metrics = [("RMSE", rmses),
                ("Recall", recalls), 
@@ -140,23 +140,6 @@ def get_top_k(input_edge_index,
     
     return overall_recall, overall_precision
 
-def print_rmse(ITERATIONS, iter, train_loss, val_loss, recall, precision, time):
-    
-    f_train_loss = "{:.3f}".format(round(np.sqrt(train_loss.item()), 3))
-    f_val_loss = "{:.3f}".format(round(np.sqrt(val_loss.item()), 3))
-    f_recall = "{:.3f}".format(round(recall, 3))
-    f_precision = "{:.3f}".format(round(precision, 3))
-    f_time = "{:.2f}".format(round(time, 2))
-    f_iter = "{:.0f}".format(iter)
-    
-    sys.stdout.write(f"\rEpoch {f_iter}/{ITERATIONS} - Train Loss: {train_loss:.3f}, "
-                     f"Val Loss: {val_loss:.3f}, Recall: {f_recall}, Precision: {f_precision}, Time: {f_time} s")
-    sys.stdout.flush()
-    
-    #print(f"[Epoch ({f_time}) {f_iter}]\tRMSE(train->val): {f_train_loss}"
-    #      f"\t-> {f_val_loss} | "
-    #      f"Recall, Prec:{f_recall, f_precision}")
-  
 
 def minibatch(*tensors, **kwargs):
     batch_size = kwargs.get('batch_size', 1024)
@@ -369,18 +352,13 @@ def train_model(model, data, data_stats, config, t_seed):
     EMB_DIM = config['emb_dim']
     BATCH_SIZE = config['batch_size']
     TOP_K = config['top_k']
-    R_BETA = config['r_beta']
-    R_METHOD = config['r_method']
-    A_BETA = config['a_beta']
-    A_METHOD = config['a_method']
     DATASET = config['dataset']
     VERBOSE = config['verbose']
     MODEL = config['model']
     MODEL_OPTION = config['option']
     TEST_SIZE = config['test_size']
-    NUM_EXP = config['num_exp']
-    MIN_USER_RATINGS = config['min_u_ratings']
     SAVE_MODEL = config['save']
+    
     NUM_USERS, NUM_ITEMS, MEAN_RATING, NUM_RATINGS, TIME_DISTANCE = data_stats['num_users'], data_stats['num_items'], data_stats['mean_rating'], data_stats['num_ratings'], data_stats['time_distance']
     
     # STEP 4: splitting the data into train and test sets
