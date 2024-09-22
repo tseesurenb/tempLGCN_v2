@@ -605,7 +605,7 @@ class tempLGCN_attn(MessagePassing):
             self._u_abs_drift_emb.weight.requires_grad = True
             
             # Initialize the period as a trainable parameter (starting with some default value)
-            self.period = nn.Parameter(torch.tensor([24.0]))  # Starting with 24 (for daily cycles, for example)
+            self.period = nn.Parameter(torch.tensor([1.0]))  # Starting with 24 (for daily cycles, for example)
             self.phase_shift = nn.Parameter(torch.tensor([0.0]))  # Optional, can also be trainable if needed
             
             self._u_abs_beta_emb = nn.Embedding(num_embeddings=1, embedding_dim=self.embedding_dim).to(self.device)  
