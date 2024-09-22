@@ -607,7 +607,6 @@ class tempLGCN_attn(MessagePassing):
             
             # Initialize the period as a trainable parameter (starting with some default value)
             self.period = nn.Parameter(torch.tensor([config['win']]))  # Starting with 24 (for daily cycles, for example)
-            self.phase_shift = nn.Parameter(torch.tensor([0.0]))  # Optional, can also be trainable if needed
             
             self._u_abs_beta_emb = nn.Embedding(num_embeddings=1, embedding_dim=self.embedding_dim).to(self.device)  
             nn.init.zeros_(self._u_abs_beta_emb.weight)
@@ -694,7 +693,7 @@ class tempLGCN_attn(MessagePassing):
                 abs_decay = torch.tanh(u_abs_decay.unsqueeze(1) * self._u_abs_beta_emb.weight)
                 _u_abs_drift_emb = _u_abs_drift_emb * abs_decay
             elif config['a_method'] == 'cos':
-                abs_decay = torch.cos((2 * torch.pi * u_abs_decay.unsqueeze(1) / self.period) + self.phase_shift)
+                abs_decay = torch.cos((2 * torch.pi * u_abs_decay.unsqueeze(1) / self.period))
                 _u_abs_drift_emb = _u_abs_drift_emb * abs_decay
                 
             _inner_pro = _inner_pro + _u_abs_drift_emb

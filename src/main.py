@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import data_prep as dp
 from world import config
-from utils import train_model
+from utils import train_model, print_metrics
 
 # ANSI escape codes for bold and red
 br = "\033[1;31m"
@@ -44,10 +44,13 @@ df = dp.add_abs_decay(df, method=A_METHOD, beta=A_BETA, verbose=VERBOSE)
 df = dp.add_u_rel_decay(df, method=R_METHOD, beta=R_BETA, verbose=VERBOSE)
 df = dp.add_i_rel_decay(df, method=R_METHOD, beta=R_BETA, verbose=VERBOSE)
 
+stats2 = {'num_users': NUM_USERS, 'num_items': NUM_ITEMS,  'num_interactions': NUM_RATINGS}
+
 # STEP 3: getting the interaction matrix values
 rmat_data = dp.get_rmat_values(df, verbose=VERBOSE)
  
-seeds = [7, 12, 89, 91, 41]
+#seeds = [7, 12, 89, 91, 41]
+seeds = [7]
 
 rmses, recalls, precs, ncdgs_5, ncdgs_10, ncdgs_15, ncdgs_20 = [], [], [], [], [], [], []
 
@@ -67,14 +70,16 @@ for seed in seeds:
 
     exp_n += 1
 
-print(f"\nModel: {br}{MODEL}{rs} | Option: {br}{MODEL_OPTION}{rs} | Dataset: {br}{DATASET}{rs} | Layers: {br}{NUM_LAYERS}{rs} | Decay: {br}{DECAY}{rs} | Batch: {br}{config['batch_size']}{rs}")
-print(f" Temp: {br}{A_METHOD}{rs} - {br}{A_BETA}{rs} | {br}{R_METHOD}{rs} - {br}{R_BETA}{rs}")
+print_metrics(rmses, recalls, precs, ncdg, stats=stats2)
+
+#print(f"\nModel: {br}{MODEL}{rs} | Option: {br}{MODEL_OPTION}{rs} | Dataset: {br}{DATASET}{rs} | Layers: {br}{NUM_LAYERS}{rs} | Decay: {br}{DECAY}{rs} | Batch: {br}{config['batch_size']}{rs}")
+#print(f" Temp: {br}{A_METHOD}{rs} - {br}{A_BETA}{rs} | {br}{R_METHOD}{rs} - {br}{R_BETA}{rs}")
 
 
-print(f"   RMSE: {rmses[0]:.4f}, {rmses[1]:.4f}, {rmses[2]:.4f}, {rmses[3]:.4f}, {rmses[4]:.4f} | {round(np.mean(rmses), 4):.4f}, {round(np.std(rmses), 4):.4f}")
-print(f" Recall: {recalls[0]:.4f}, {recalls[1]:.4f}, {recalls[2]:.4f}, {recalls[3]:.4f}, {recalls[4]:.4f} | {round(np.mean(recalls), 4):.4f}, {round(np.std(recalls), 4):.4f}")
-print(f"   Prec: {precs[0]:.4f}, {precs[1]:.4f}, {precs[2]:.4f}, {precs[3]:.4f}, {precs[4]:.4f} | {round(np.mean(precs), 4):.4f}, {round(np.std(precs), 4):.4f}")
-print(f" NDCG@5: {ncdgs_5[0]:.4f}, {ncdgs_5[1]:.4f}, {ncdgs_5[2]:.4f}, {ncdgs_5[3]:.4f}, {ncdgs_5[4]:.4f} | {round(np.mean(ncdgs_5), 4):.4f}, {round(np.std(ncdgs_5), 4):.4f}")
-print(f"NDCG@10: {ncdgs_10[0]:.4f}, {ncdgs_10[1]:.4f}, {ncdgs_10[2]:.4f}, {ncdgs_10[3]:.4f}, {ncdgs_10[4]:.4f} | {round(np.mean(ncdgs_10), 4):.4f}, {round(np.std(ncdgs_10), 4):.4f}")
-print(f"NDCG@15: {ncdgs_15[0]:.4f}, {ncdgs_15[1]:.4f}, {ncdgs_15[2]:.4f}, {ncdgs_15[3]:.4f}, {ncdgs_15[4]:.4f} | {round(np.mean(ncdgs_15), 4):.4f}, {round(np.std(ncdgs_15), 4):.4f}")
-print(f"NDCG@20: {ncdgs_20[0]:.4f}, {ncdgs_20[1]:.4f}, {ncdgs_20[2]:.4f}, {ncdgs_20[3]:.4f}, {ncdgs_20[4]:.4f} | {round(np.mean(ncdgs_20), 4):.4f}, {round(np.std(ncdgs_20), 4):.4f}")
+#print(f"   RMSE: {rmses[0]:.4f}, {rmses[1]:.4f}, {rmses[2]:.4f}, {rmses[3]:.4f}, {rmses[4]:.4f} | {round(np.mean(rmses), 4):.4f}, {round(np.std(rmses), 4):.4f}")
+#print(f" Recall: {recalls[0]:.4f}, {recalls[1]:.4f}, {recalls[2]:.4f}, {recalls[3]:.4f}, {recalls[4]:.4f} | {round(np.mean(recalls), 4):.4f}, {round(np.std(recalls), 4):.4f}")
+#print(f"   Prec: {precs[0]:.4f}, {precs[1]:.4f}, {precs[2]:.4f}, {precs[3]:.4f}, {precs[4]:.4f} | {round(np.mean(precs), 4):.4f}, {round(np.std(precs), 4):.4f}")
+#print(f" NDCG@5: {ncdgs_5[0]:.4f}, {ncdgs_5[1]:.4f}, {ncdgs_5[2]:.4f}, {ncdgs_5[3]:.4f}, {ncdgs_5[4]:.4f} | {round(np.mean(ncdgs_5), 4):.4f}, {round(np.std(ncdgs_5), 4):.4f}")
+#print(f"NDCG@10: {ncdgs_10[0]:.4f}, {ncdgs_10[1]:.4f}, {ncdgs_10[2]:.4f}, {ncdgs_10[3]:.4f}, {ncdgs_10[4]:.4f} | {round(np.mean(ncdgs_10), 4):.4f}, {round(np.std(ncdgs_10), 4):.4f}")
+#print(f"NDCG@15: {ncdgs_15[0]:.4f}, {ncdgs_15[1]:.4f}, {ncdgs_15[2]:.4f}, {ncdgs_15[3]:.4f}, {ncdgs_15[4]:.4f} | {round(np.mean(ncdgs_15), 4):.4f}, {round(np.std(ncdgs_15), 4):.4f}")
+#print(f"NDCG@20: {ncdgs_20[0]:.4f}, {ncdgs_20[1]:.4f}, {ncdgs_20[2]:.4f}, {ncdgs_20[3]:.4f}, {ncdgs_20[4]:.4f} | {round(np.mean(ncdgs_20), 4):.4f}, {round(np.std(ncdgs_20), 4):.4f}")

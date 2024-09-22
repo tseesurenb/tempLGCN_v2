@@ -17,6 +17,7 @@ from torch import nn, optim
 import time
 from tqdm import tqdm
 import data_prep as dp
+from world import config
 from model import tempLGCN, MCCF, NGCF, tempLGCN_attn
 
 # ANSI escape codes for bold and red
@@ -32,6 +33,28 @@ models = {
     'MCCF': MCCF,
     'NGCF': NGCF
 }
+
+def print_metrics(rmses, recalls, precs, ncdg, stats): 
+    
+    print(f" Dataset: {config['dataset']}, num_users: {stats['num_users']}, num_items: {stats['num_items']}, num_interactions: {stats['num_interactions']}")
+    
+    print(f"   MODEL: {br}{config['model']}{rs} | #LAYERS: {br}{config['layers']}{rs} | BATCH_SIZE: {br}{config['batch_size']}{rs} | DECAY: {br}{config['decay']}{rs} | EPOCHS: {br}{config['epochs']}{rs} ")
+
+    metrics = [("RMSE", rmses),
+            ("Recall", recalls), 
+            ("Prec", precs), 
+            ("NDCG", ncdg)]
+
+    for name, metric in metrics:
+        values_str = ', '.join([f"{x:.4f}" for x in metric[:5]])
+        mean_str = f"{round(np.mean(metric), 4):.4f}"
+        std_str = f"{round(np.std(metric), 4):.4f}"
+        
+        # Apply formatting with bb and rs if necessary
+        if name in ["RMSE", "NDCG"]:
+            mean_str = f"{bb}{mean_str}{rs}"
+        
+        print(f"{name:>8}: {values_str} | {mean_str}, {std_str}")
 
 def get_recall_at_k(input_edge_index,
                     input_edge_values,
