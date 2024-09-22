@@ -697,7 +697,7 @@ class tempLGCN_attn(MessagePassing):
                 #abs_decay = torch.cos((2 * torch.pi * u_abs_decay.unsqueeze(1) / self.period))
                 
                 num_terms = config['num_terms'] 
-                abs_decay = sum(torch.cos((2 * torch.pi * (n + 1) * u_abs_decay.unsqueeze(1) * self._u_abs_beta_emb.weight[n] / self.period)) for n in range(num_terms))
+                abs_decay = sum(torch.cos((2 * torch.pi * (n + 1) * u_abs_decay.unsqueeze(1) / self.period) * self._u_abs_beta_emb.weight[n]) for n in range(num_terms))
                 
                 # Full Fourier-like series with both cosine (real) and sine (imaginary) components
                 #abs_decay = sum(
