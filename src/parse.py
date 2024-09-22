@@ -34,5 +34,6 @@ def parse_args():
     parser.add_argument('--num_exp', type=int, default=1)
     parser.add_argument('--min_u_ratings', type=int, default=20)
     parser.add_argument('--save', type=bool, default=False)
+    parser.add_argument('--num_terms', type=int, default=1)
     
     return parser.parse_args()

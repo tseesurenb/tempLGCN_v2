@@ -38,3 +38,4 @@ config['test_size'] = args.test_size
 config['num_exp'] = args.num_exp
 config['min_u_ratings'] = args.min_u_ratings
 config['save'] = args.save
+config['num_terms'] = args.num_terms
