@@ -689,12 +689,14 @@ class tempLGCN_attn(MessagePassing):
             # Use the learnable period and phase shift in the cosine function
             if config['a_method'] == 'sigmoid':
                 abs_decay = torch.sigmoid(u_abs_decay.unsqueeze(1) * self._u_abs_beta_emb.weight)
+                _u_abs_drift_emb = _u_abs_drift_emb * abs_decay
             elif config['a_method'] == 'tanh':
                 abs_decay = torch.tanh(u_abs_decay.unsqueeze(1) * self._u_abs_beta_emb.weight)
+                _u_abs_drift_emb = _u_abs_drift_emb * abs_decay
             elif config['a_method'] == 'cos':
                 abs_decay = torch.cos((2 * torch.pi * u_abs_decay.unsqueeze(1) / self.period) + self.phase_shift)
-            
-            _u_abs_drift_emb = _u_abs_drift_emb * abs_decay
+                _u_abs_drift_emb = _u_abs_drift_emb * abs_decay
+                
             _inner_pro = _inner_pro + _u_abs_drift_emb
             
         if self.u_rel_drift:
