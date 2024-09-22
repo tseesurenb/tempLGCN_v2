@@ -49,8 +49,8 @@ stats2 = {'num_users': NUM_USERS, 'num_items': NUM_ITEMS,  'num_interactions': N
 # STEP 3: getting the interaction matrix values
 rmat_data = dp.get_rmat_values(df, verbose=VERBOSE)
  
-#seeds = [7, 12, 89, 91, 41]
-seeds = [7]
+seeds = [7, 12, 89, 91, 41]
+#seeds = [7]
 
 rmses, recalls, precs, ncdgs_5, ncdgs_10, ncdgs_15, ncdgs_20 = [], [], [], [], [], [], []
 
