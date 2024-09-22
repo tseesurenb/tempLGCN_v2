@@ -35,10 +35,41 @@ models = {
 }
 
 def print_metrics(rmses, recalls, precs, ncdg, stats): 
+    # Print dataset and stats information
+    print(f" Dataset: {config['dataset']}, num_users: {stats['num_users']}, num_items: {stats['num_items']}, num_interactions: {stats['num_interactions']}")
+    
+    print(f"   MODEL: {br}{config['model']}{rs} | #LAYERS: {br}{config['num_layers']}{rs} | BATCH_SIZE: {br}{config['batch_size']}{rs} | DECAY: {br}{config['decay']}{rs} | EPOCHS: {br}{config['epochs']}{rs} ")
+
+    metrics = [("RMSE", rmses),
+               ("Recall", recalls), 
+               ("Prec", precs), 
+               ("NDCG", ncdg)]
+
+    for name, metric in metrics:
+        # Ensure metric is an array or list
+        if isinstance(metric, dict):
+            values = list(metric.values())
+        else:
+            values = metric
+
+        # Get the first five values safely
+        values_str = ', '.join([f"{x:.4f}" for x in values[:5]])
+        
+        # Calculate mean and std deviation safely
+        mean_str = f"{round(np.mean(values), 4):.4f}"
+        std_str = f"{round(np.std(values), 4):.4f}"
+
+        # Apply formatting with bb and rs if necessary
+        if name in ["RMSE", "NDCG"]:
+            mean_str = f"{bb}{mean_str}{rs}"
+        
+        print(f"{name:>8}: {values_str} | {mean_str}, {std_str}")
+        
+def print_metrics2(rmses, recalls, precs, ncdg, stats): 
     
     print(f" Dataset: {config['dataset']}, num_users: {stats['num_users']}, num_items: {stats['num_items']}, num_interactions: {stats['num_interactions']}")
     
-    print(f"   MODEL: {br}{config['model']}{rs} | #LAYERS: {br}{config['layers']}{rs} | BATCH_SIZE: {br}{config['batch_size']}{rs} | DECAY: {br}{config['decay']}{rs} | EPOCHS: {br}{config['epochs']}{rs} ")
+    print(f"   MODEL: {br}{config['model']}{rs} | #LAYERS: {br}{config['num_layers']}{rs} | BATCH_SIZE: {br}{config['batch_size']}{rs} | DECAY: {br}{config['decay']}{rs} | EPOCHS: {br}{config['epochs']}{rs} ")
 
     metrics = [("RMSE", rmses),
             ("Recall", recalls), 
